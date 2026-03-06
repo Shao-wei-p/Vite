@@ -10,7 +10,7 @@ const Login = () => {
         login(role);
         if (role === 'registered') navigate('/dashboard');
         else if (role === 'worker') navigate('/management');
-        else if (role === 'admin') navigate('/admin');
+        else if (role === 'admin') navigate('/management');
         else navigate('/');
     };
 

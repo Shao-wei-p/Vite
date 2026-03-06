@@ -1,8 +1,10 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 
 const ManagementPanel = () => {
-    const { activities, deleteActivity, addActivity, events, addEvent, deleteEvent } = useData();
+    const { user } = useAuth();
+    const { activities, deleteActivity, addActivity, events, addEvent, deleteEvent, messages} = useData();
 
     // Handlers para añadir datos simulados rápidamente
     const handleAddActivity = () => {
@@ -25,7 +27,7 @@ const ManagementPanel = () => {
             <h1 className="text-center mb-10">🛠️ Panel de Gestión</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                
+
                 {/* GESTIÓN DE ACTIVIDADES */}
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
@@ -46,7 +48,7 @@ const ManagementPanel = () => {
                     </ul>
                 </div>
 
-                {/* GESTIÓN DE EVENTOS (NUEVO) */}
+                {/* GESTIÓN DE EVENTOS*/}
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-purple-700 m-0">📅 Eventos</h2>
@@ -68,6 +70,15 @@ const ManagementPanel = () => {
                         ))}
                     </ul>
                 </div>
+                {(user?.role === 'admin') && (
+                    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-purple-700 m-0">Mensajes Recibidos:</h2>
+                    </div>
+                    <ul className="space-y-3">
+                        {messages.map((m, i) => <li key={i} className="border-b p-2">{m.from}: {m.text}</li>)}</ul>
+                </div>
+                )}
 
             </div>
         </div>
