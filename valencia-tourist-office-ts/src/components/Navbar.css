@@ -1,0 +1,55 @@
+.navbar {
+  background-color: #ffffff;
+  border-bottom: 3px solid #E8A87C; /* Naranja suave */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  flex-wrap: wrap; /* Para móviles */
+}
+
+.nav-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #E27D60;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.nav-links a.active {
+  color: #E27D60;
+  border-bottom: 2px solid #E27D60;
+}
+
+.role-select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid #E27D60;
+  color: #E27D60;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* Ajuste responsive básico */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none; /* Ocultar menú en muy pequeño si no hay hamburguesa */
+  }
+}

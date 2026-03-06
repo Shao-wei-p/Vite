@@ -1,0 +1,110 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #F8F9FA;
+  color: #333;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  color: #2D3436;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Sistema de Grid para hacer cards responsivas */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+/* Hero Section */
+.hero-section {
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Ciutat_de_les_Arts_i_les_Ci%C3%A8ncies%2C_Val%C3%A8ncia%2C_Espanya%2C_2014-06-30%2C_DD_144.JPG/1280px-Ciutat_de_les_Arts_i_les_Ci%C3%A8ncies%2C_Val%C3%A8ncia%2C_Espanya%2C_2014-06-30%2C_DD_144.JPG');
+  background-size: cover;
+  background-position: center;
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.hero-content h1 {
+  color: white;
+  font-size: 3rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+/* Event Cards */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-card {
+  background: white;
+  border-left: 5px solid #E27D60;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Login Buttons */
+.login-btn {
+    padding: 15px 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+.login-btn:hover { transform: scale(1.05); }
+
+.login-btn.visitor { background-color: #95a5a6; }
+.login-btn.user { background-color: #3498db; }
+.login-btn.worker { background-color: #f39c12; }
+.login-btn.admin { background-color: #e74c3c; }
+
+/* Dashboard Link in Navbar */
+.dash-link {
+    background: #E27D60;
+    color: white !important;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.login-link {
+    background: #41B3A3;
+    color: white !important;
+    padding: 8px 15px;
+    border-radius: 4px;
+}
+
+/* Estructura para Sticky Footer */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrap {
+  flex: 1; /* Esto hace que el contenido ocupe todo el espacio disponible empujando el footer */
+}

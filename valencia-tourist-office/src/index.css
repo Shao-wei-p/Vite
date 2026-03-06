@@ -1,0 +1,126 @@
+/* En versiones nuevas de Tailwind, se recomienda usar @import. 
+   Si esto falla, vuelve a @tailwind base; etc. */
+@import "tailwindcss";
+
+/* 
+  ACADÉMICO: Capa Base (Estilos Globales)
+  Aquí definimos cómo se ven los elementos HTML estándar por defecto.
+  Usamos @apply para inyectar estilos de Tailwind directamente en las etiquetas HTML.
+*/
+@layer base {
+  html {
+    scroll-behavior: smooth; /* Desplazamiento suave para los enlaces ancla */
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-800 font-sans antialiased;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl font-extrabold text-green-600 mb-6 tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl font-bold text-gray-800 mb-4 tracking-tight;
+  }
+
+  h3 {
+    @apply text-xl font-bold text-gray-700 mb-2;
+  }
+
+  p {
+    @apply leading-relaxed text-gray-600 mb-4;
+  }
+}
+
+/* 
+  ACADÉMICO: Capa de Componentes (Clases Reutilizables)
+  Aquí creamos nuestras propias clases ("components") compuestas por utilidades de Tailwind.
+  Esto ayuda a limpiar el JSX y mantener consistencia en botones, tarjetas y formularios.
+*/
+@layer components {
+  
+  /* --- BOTONES GLOBALES --- */
+  .btn {
+    @apply px-6 py-2 rounded-lg font-bold transition-all duration-300 transform active:scale-95 text-center cursor-pointer;
+  }
+  .btn-primary {
+    @apply px-6 py-2 rounded-lg font-bold transition-all duration-300 transform active:scale-95 text-center cursor-pointer bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg;
+  }
+  .btn-secondary {
+    @apply px-6 py-2 rounded-lg font-bold transition-all duration-300 transform active:scale-95 text-center cursor-pointer bg-white text-green-600 border-2 border-green-600 hover:bg-green-50;
+  }
+  .btn-ghost {
+    @apply px-6 py-2 rounded-lg font-bold transition-all duration-300 transform active:scale-95 text-center cursor-pointer text-white border border-white hover:bg-white hover:text-green-600;
+  }
+
+  /* --- NAVEGACIÓN (NAVBAR) --- */
+  .nav-container {
+    @apply bg-green-600 shadow-lg sticky top-0 z-50;
+  }
+  .nav-content {
+    @apply max-w-7xl mx-auto px-4 py-3 flex justify-between items-center;
+  }
+  .nav-link {
+    @apply text-white hover:text-green-200 transition font-medium text-sm;
+  }
+  .nav-link-active {
+    @apply text-yellow-300 font-bold border-b-2 border-yellow-300;
+  }
+
+  /* --- SECCIÓN HERO (HOME) --- */
+  .hero-section {
+    @apply relative h-[80vh] flex items-center justify-center bg-green-600 text-white overflow-hidden;
+  }
+  .hero-overlay {
+    @apply absolute inset-0 bg-black opacity-30;
+  }
+
+  /* --- TARJETAS (CARDS) --- */
+  .card {
+    @apply bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300 flex flex-col h-full;
+  }
+  .card-header {
+    @apply h-48 bg-green-100 flex items-center justify-center text-8xl text-green-400 select-none;
+  }
+  .card-body {
+    @apply p-6 flex flex-col flex-grow;
+  }
+  .card-title {
+    @apply text-xl font-bold mb-2 text-gray-800;
+  }
+  .card-price {
+    @apply text-right font-bold text-2xl text-green-500 mb-4;
+  }
+
+  /* --- FORMULARIOS --- */
+  .form-container {
+    @apply bg-white p-8 rounded-xl shadow-xl border border-gray-100 w-full;
+  }
+  .input-group {
+    @apply mb-4;
+  }
+  .input-label {
+    @apply block text-sm font-bold text-gray-700 mb-1;
+  }
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition bg-gray-50 focus:bg-white;
+  }
+
+  /* --- ROLES (LOGIN) --- */
+  .btn-role {
+    @apply w-full p-4 rounded-lg font-bold transition duration-200 text-left shadow-sm flex items-center gap-3 border;
+  }
+}
+
+/* 
+  ACADÉMICO: Utilidades personalizadas y animaciones
+*/
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
