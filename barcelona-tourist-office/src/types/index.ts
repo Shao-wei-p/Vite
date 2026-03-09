@@ -27,4 +27,5 @@ export interface WeatherData {
     temp: number;
     condition: string;
     city: string;
+    date: string;
 }

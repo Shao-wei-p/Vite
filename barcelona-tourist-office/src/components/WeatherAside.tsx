@@ -13,6 +13,7 @@ const WeatherAside: React.FC = () => {
             <div className="weather-header">El tiempo en {data?.city}</div>
             <div className="weather-temp">{data?.temp}°C</div>
             <div className="weather-condition">{data?.condition}</div>
+            <div className="weather-condition">{data?.date}</div>
         </aside>
     );
 };
