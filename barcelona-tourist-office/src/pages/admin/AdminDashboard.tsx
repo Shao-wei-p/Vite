@@ -1,59 +1,75 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MockDB } from '../../services/mockDatabase';
+// Reutilización de componentes: Importamos el dashboard de worker para no duplicar código
+// ya que el Admin puede hacer todo lo que hace un Worker.
 import WorkerDashboard from '../worker/WorkerDashboard';
 
 const AdminDashboard: React.FC = () => {
+    // State UI: Controla qué pestaña está activa.
+    // Union Type Literal: Solo permite estos 3 strings exactos.
     const [activeTab, setActiveTab] = useState<'users' | 'content' | 'inbox'>('users');
     const queryClient = useQueryClient();
 
-    // Estados para filtros
+    // Estados para filtros de búsqueda locales
     const [userFilter, setUserFilter] = useState('');
     const [msgFilter, setMsgFilter] = useState('');
 
-    // Queries
+    // --- QUERIES ---
+    // Cargamos usuarios y mensajes al montar el componente.
+    // data alias: Renombramos 'data' a 'users' y 'messages' para claridad semántica.
     const { data: users, isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: MockDB.getUsers });
     const { data: messages, isLoading: loadingMsgs } = useQuery({ queryKey: ['adminInbox'], queryFn: MockDB.getMessages });
 
-    // Lógica de filtrado
+    // --- LÓGICA DE FILTRADO (Client-Side) ---
+    // Filtramos la lista de usuarios en memoria basándonos en el input de búsqueda.
     const filteredUsers = users?.filter(u => 
         u.username.toLowerCase().includes(userFilter.toLowerCase()) || 
         u.email.toLowerCase().includes(userFilter.toLowerCase())
     );
 
-    // Separar por roles
+    // Derivamos sub-listas para mostrar los usuarios agrupados por rol visualmente.
     const groupAdmins = filteredUsers?.filter(u => u.role === 'admin');
     const groupWorkers = filteredUsers?.filter(u => u.role === 'worker');
     const groupTourists = filteredUsers?.filter(u => u.role === 'registered');
 
+    // Filtramos mensajes de contacto
     const filteredMessages = messages?.filter(m => 
         m.name.toLowerCase().includes(msgFilter.toLowerCase()) || 
         m.email.toLowerCase().includes(msgFilter.toLowerCase()) ||
         m.content.toLowerCase().includes(msgFilter.toLowerCase())
     );
 
-    // Mutations
+    // --- MUTATIONS (Acciones de escritura) ---
+    
+    // 1. Eliminar Usuario
     const deleteUserMut = useMutation({
         mutationFn: MockDB.deleteUser,
         onSuccess: () => {
+            // Invalidación: Refresca la lista de usuarios automáticamente tras borrar uno.
             queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
             alert("Usuario eliminado correctamente");
         }
     });
 
+    // 2. Cambiar Rol (Ascender/Degradar)
+    // Recibe un objeto con ID y el nuevo Rol.
     const updateRoleMut = useMutation({
         mutationFn: (vars: { id: string, role: string }) => MockDB.updateUserRole(vars.id, vars.role),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
     });
 
+    // 3. Marcar mensaje como leído
     const markReadMut = useMutation({
         mutationFn: MockDB.markMessageRead,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminInbox'] })
     });
 
-    // Estilos de pestaña
+    // --- HELPERS DE UI ---
+    // Función que retorna estilos dinámicos para las pestañas (Tabs).
     const getTabStyle = (tabName: string) => ({
         padding: '1rem',
+        // Condicional ternario: Si es la tab activa, pon borde rojo y negrita.
         borderBottom: activeTab === tabName ? '3px solid #b91c1c' : '1px solid #ddd',
         fontWeight: activeTab === tabName ? 'bold' : 'normal',
         background: 'none',
@@ -64,7 +80,8 @@ const AdminDashboard: React.FC = () => {
         fontSize: '1rem'
     });
 
-    // Helper para renderizar tablas
+    // Función Render Prop Pattern (simplificado):
+    // Encapsula la lógica de renderizado de una tabla para reutilizarla 3 veces (Admins, Workers, Turistas).
     const renderUserTable = (title: string, list: typeof users, color: string) => (
         <div style={{ marginBottom: '2rem' }}>
             <h3 style={{ color, borderBottom: `2px solid ${color}`, paddingBottom: '0.5rem' }}>
@@ -85,6 +102,7 @@ const AdminDashboard: React.FC = () => {
                              <td style={{ padding: '1rem' }}>{u.username}</td>
                              <td style={{ padding: '1rem' }}>{u.email}</td>
                              <td style={{ padding: '1rem' }}>
+                                 {/* Select controlado que dispara la mutación al cambiar (onChange) */}
                                  <select 
                                      value={u.role} 
                                      onChange={(e) => updateRoleMut.mutate({ id: u.id, role: e.target.value })}
@@ -139,8 +157,10 @@ const AdminDashboard: React.FC = () => {
                         />
                     </div>
 
+                    {/* Render Conditional: Loading State */}
                     {loadingUsers ? <p>Cargando...</p> : (
                         <div>
+                            {/* Llamamos al helper para renderizar las 3 tablas con colores distintos */}
                             {renderUserTable("Administradores", groupAdmins, "#b91c1c")}
                             {renderUserTable("Trabajadores", groupWorkers, "#d97706")}
                             {renderUserTable("Turistas Registrados", groupTourists, "#166534")}
@@ -149,10 +169,11 @@ const AdminDashboard: React.FC = () => {
                 </div>
             )}
 
-            {/* TAB: CONTENIDO (Reutiliza vista Worker) */}
+            {/* TAB: CONTENIDO */}
             {activeTab === 'content' && (
                 <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', background: '#fff' }}>
                     <p style={{ marginBottom: '1rem', color: '#666', fontStyle: 'italic' }}>* Tienes permisos totales sobre las herramientas de trabajador.</p>
+                    {/* Renderizamos el componente WorkerDashboard entero aquí. Composición de componentes. */}
                     <WorkerDashboard />
                 </div>
             )}
@@ -173,22 +194,28 @@ const AdminDashboard: React.FC = () => {
 
                     <div style={{ display: 'grid', gap: '1rem' }}>
                         {filteredMessages?.length === 0 && <p>No hay mensajes que coincidan con la búsqueda.</p>}
+                        
                         {filteredMessages?.map(msg => (
                             <div key={msg.id} style={{ 
                                 padding: '1rem', 
                                 border: '1px solid #ddd', 
                                 borderRadius: '8px', 
+                                // Estilos dinámicos: fondo gris si ya se leyó
                                 background: msg.read ? '#f3f4f6' : '#fff',
+                                // Borde izquierdo azul para resaltar los no leídos
                                 borderLeft: msg.read ? '1px solid #ddd' : '4px solid #3b82f6'
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    {/* Escapado seguro de HTML por defecto en React */}
                                     <strong>{msg.name} &lt;{msg.email}&gt;</strong>
                                     <span style={{ fontSize: '0.8rem', color: '#666' }}>{new Date(msg.date).toLocaleDateString()}</span>
                                 </div>
                                 <p style={{ marginBottom: '1rem' }}>{msg.content}</p>
+                                
+                                {/* Botón condicional: solo aparece si no se ha leído */}
                                 {!msg.read ? (
                                     <button 
-                                        onClick={() => markReadMut.mutate(msg.id)}
+                                        onClick={() => markReadMut.mutate(msg.id)} // Llama a la mutación
                                         style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}
                                     >
                                         Marcar como Leído

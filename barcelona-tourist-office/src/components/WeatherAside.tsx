@@ -1,6 +1,7 @@
 import React from 'react';
 // Importamos nuestro Custom Hook. Esto abstrae toda la complejidad de la API y React Query.
 import { useRealTimeWeather } from '../hooks/useRealTimeWeather';
+import { useClock } from '../hooks/useClock';
 import './WeatherAside.css';
 
 const WeatherAside: React.FC = () => {
@@ -9,7 +10,7 @@ const WeatherAside: React.FC = () => {
     // isLoading: true mientras se hace la primera petición.
     // isError: true si falló la red o hubo excepción.
     const { data, isLoading, isError } = useRealTimeWeather();
-
+    const { formatTime } = useClock();
     // Renderizado condicional (Early Returns):
     // Manejamos los estados tristes antes de intentar renderizar datos que podrían no existir.
     if (isLoading) return <div className="weather-aside">Cargando clima...</div>;
@@ -24,6 +25,7 @@ const WeatherAside: React.FC = () => {
             <div className="weather-temp">{data?.temp}°C</div>
             <div className="weather-condition">{data?.condition}</div>
             <div className="weather-condition">{data?.date}</div>
+            <div className="weather-condition">{formatTime}</div>
         </aside>
     );
 };

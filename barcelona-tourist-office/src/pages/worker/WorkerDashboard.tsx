@@ -4,15 +4,15 @@ import { Activity, Event } from '../../types';
 import { MockDB } from '../../services/mockDatabase';
 
 const WorkerDashboard: React.FC = () => {
-    // State para Tab: Controla qué sección se ve.
-    // TypeScript restringue los valores posibles con la Union Type ('activities' | 'events'...).
+    // State para Tab: Controla qué sección se ve (Navegación local).
     const [tab, setTab] = useState<'activities' | 'events' | 'attendees'>('activities');
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient(); // Para invalidar cachés tras editar/borrar.
     
     // States para Formularios (Edición/Creación)
-    const [isEditing, setIsEditing] = useState(false);
-    // Partial<Activity>: Un utilitario de TS que hace que todas las propiedades de Activity sean opcionales.
-    // Útil cuando estamos construyendo un objeto formulario paso a paso.
+    const [isEditing, setIsEditing] = useState(false); // ¿Mostramos el formulario modal?
+
+    // Partial<T>: Utilidad de TS. Permite que el objeto temporalmente no tenga todas las propiedades requeridas
+    // (ej: id) mientras el usuario está escribiendo en el formulario.
     const [formAct, setFormAct] = useState<Partial<Activity>>({});
     const [formEvt, setFormEvt] = useState<Partial<Event>>({});
 
@@ -21,14 +21,15 @@ const WorkerDashboard: React.FC = () => {
     const [evtFilter, setEvtFilter] = useState('');
     const [attFilter, setAttFilter] = useState('');
 
-    // --- QUERIES ---
-    // Cargamos TODO de golpe. Como MockDB simula latencia, estos 3 inician en paralelo.
+    // --- QUERIES PARALELAS ---
+    // React Query lanza las 3 peticiones al mismo tiempo al cargar el dashboard.
     const { data: activities } = useQuery({ queryKey: ['activities'], queryFn: MockDB.getActivities });
     const { data: events } = useQuery({ queryKey: ['events'], queryFn: MockDB.getEvents });
     const { data: attendees } = useQuery({ queryKey: ['attendees'], queryFn: MockDB.getAllBookings });
 
-    // Lógica de filtrado en cliente (Client-side filtering)
-    // Es rápido para datasets pequeños (< 1000 items).
+    // --- LÓGICA DE FILTRADO (En Memoria) ---
+    // Filtramos los arrays recibidos del servidor basándonos en los inputs de texto.
+    // Esto es muy rápido para < 1000 elementos y evita peticiones extra al backend.
     const filteredActivities = activities?.filter(a => a.title.toLowerCase().includes(actFilter.toLowerCase()));
     const filteredEvents = events?.filter(e => e.title.toLowerCase().includes(evtFilter.toLowerCase()));
     
@@ -38,17 +39,17 @@ const WorkerDashboard: React.FC = () => {
         a.activityTitle.toLowerCase().includes(attFilter.toLowerCase())
     );
 
-    // Separar por estado para visualización en tablas distintas
+    // Separamos reservas confirmadas de canceladas para mostrarlas en tablas diferentes.
     const confirmedBookings = filteredAttendees?.filter(a => a.status === 'confirmed');
     const cancelledBookings = filteredAttendees?.filter(a => a.status === 'cancelled');
 
-    // --- MUTATIONS ACT ---
+    // --- MUTATIONS ACTIVIDADES (CRUD) ---
     const saveActMutation = useMutation({
         mutationFn: MockDB.saveActivity,
         onSuccess: () => {
-             // Invalida querie para refrescar tabla
+             // Refresco automático de la tabla
             queryClient.invalidateQueries({ queryKey: ['activities'] });
-            // Cierra el formulario y lo limpia
+            // UX: Cerrar formulario y limpiarlo
             setIsEditing(false);
             setFormAct({});
         }
@@ -59,7 +60,7 @@ const WorkerDashboard: React.FC = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['activities'] })
     });
 
-    // --- MUTATIONS EVT ---
+    // --- MUTATIONS EVENTOS ---
     const saveEvtMutation = useMutation({
         mutationFn: MockDB.saveEvent,
         onSuccess: () => {
@@ -75,7 +76,7 @@ const WorkerDashboard: React.FC = () => {
     });
 
     // --- MUTATION RESERVAS ---
-    // Permite al trabajador cancelar reservas de OTROS usuarios.
+    // Permite al trabajador cancelar reservas de OTROS usuarios (Gestión administrativa).
     const cancelBookingMut = useMutation({
         mutationFn: MockDB.cancelBooking,
         onSuccess: () => {
@@ -84,7 +85,7 @@ const WorkerDashboard: React.FC = () => {
         }
     });
 
-    // Helper Styles (Estilos en línea para simplicidad en este prototipo)
+    // Helper Styles (Estilos en objeto JS)
     const btnStyle = { padding: '0.5rem 1rem', cursor: 'pointer', marginRight: '5px' };
 
     return (
@@ -110,16 +111,18 @@ const WorkerDashboard: React.FC = () => {
                         />
                     </div>
                     
-                    {/* Render Formulario Condicional */}
+                    {/* Formulario Condicional (Aparece solo si isEditing es true) */}
                     {isEditing && (
                         <div style={{background: '#f9f9f9', padding: '1rem', marginBottom: '1rem', border: '1px solid #ddd'}}>
-                            {/* Título dinámico: Si tiene ID es editar, si no, nueva */}
+                            {/* Título dinámico: Si el objeto tiene ID, estamos editando. Si no, creando. */}
                             <h4>{formAct.id ? 'Editar' : 'Nueva'} Actividad</h4>
-                            {/* Controlled Inputs: vinculados state formAct */}
+                            
+                            {/* Inputs controlados vinculados al estado formAct */}
                             <input placeholder="Título" value={formAct.title || ''} onChange={e=>setFormAct({...formAct, title: e.target.value})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
                             <input placeholder="Precio" type="number" value={formAct.price || ''} onChange={e=>setFormAct({...formAct, price: Number(e.target.value)})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
                             <input placeholder="Imagen (Emoji)" value={formAct.image || ''} onChange={e=>setFormAct({...formAct, image: e.target.value})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
-                            {/* Cast 'as Activity': aseguramos a TS que al guardar el objeto está completo */}
+                            
+                            {/* Type Assertion (as Activity): Le decimos a TS "Confía en mí, al guardar esto tendrá forma de Activity válida" */}
                             <button onClick={() => saveActMutation.mutate(formAct as Activity)} style={{...btnStyle, background: 'blue', color:'white'}}>Guardar</button>
                             <button onClick={() => setIsEditing(false)} style={btnStyle}>Cancelar</button>
                         </div>
@@ -135,7 +138,7 @@ const WorkerDashboard: React.FC = () => {
                                     <td>{a.title}</td>
                                     <td>{a.price}€</td>
                                     <td>
-                                        {/* Carga el item en el form para editar */}
+                                        {/* Carga el item en el form (setFormAct) y abre el modo edición */}
                                         <button onClick={() => {setFormAct(a); setIsEditing(true);}} style={{marginRight: '5px'}}>✏️</button>
                                         <button onClick={() => {if(confirm('Borrar?')) delActMutation.mutate(a.id);}}>🗑️</button>
                                     </td>
