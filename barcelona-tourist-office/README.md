@@ -2,6 +2,11 @@
 
 Aplicación web moderna desarrollada con **React, TypeScript y Vite** para la gestión turística de Barcelona. La plataforma permite a los turistas consultar actividades y eventos, mientras que proporciona herramientas de gestión para trabajadores y administradores.
 
+## Utiliza git
+staged changes
+git commit -m "..."
+git push
+
 ## 🚀 Características Principales
 
 ### 🌍 Portal Público

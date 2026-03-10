@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MockDB } from '../../services/mockDatabase';
 // Reutilización de componentes: Importamos el dashboard de worker para no duplicar código
@@ -23,25 +23,63 @@ const AdminDashboard: React.FC = () => {
 
     // --- LÓGICA DE FILTRADO (Client-Side) ---
     // Filtramos la lista de usuarios en memoria basándonos en el input de búsqueda.
-    const filteredUsers = users?.filter(u => 
-        u.username.toLowerCase().includes(userFilter.toLowerCase()) || 
-        u.email.toLowerCase().includes(userFilter.toLowerCase())
-    );
+    const filteredUsers = useMemo(() => {
+        if (!users) return [];
+        // 1. Convertimos el término de búsqueda UNA sola vez, fuera del bucle
+        const search = userFilter.toLowerCase();
+        // 2. Filtramos
+        return users.filter(u =>
+            u.username.toLowerCase().includes(search) ||
+            u.email.toLowerCase().includes(search)
+        );
+    }, [users, userFilter]); // Solo recalcula si 'users' o 'userFilter' cambian
 
-    // Derivamos sub-listas para mostrar los usuarios agrupados por rol visualmente.
-    const groupAdmins = filteredUsers?.filter(u => u.role === 'admin');
-    const groupWorkers = filteredUsers?.filter(u => u.role === 'worker');
-    const groupTourists = filteredUsers?.filter(u => u.role === 'registered');
+    // // Derivamos sub-listas para mostrar los usuarios agrupados por rol visualmente.
+    // const groupAdmins = filteredUsers?.filter(u => u.role === 'admin');
+    // const groupWorkers = filteredUsers?.filter(u => u.role === 'worker');
+    // const groupTourists = filteredUsers?.filter(u => u.role === 'registered');
 
-    // Filtramos mensajes de contacto
-    const filteredMessages = messages?.filter(m => 
-        m.name.toLowerCase().includes(msgFilter.toLowerCase()) || 
-        m.email.toLowerCase().includes(msgFilter.toLowerCase()) ||
-        m.content.toLowerCase().includes(msgFilter.toLowerCase())
-    );
+    // // Filtramos mensajes de contacto
+    // const filteredMessages = messages?.filter(m =>
+    //     m.name.toLowerCase().includes(msgFilter.toLowerCase()) ||
+    //     m.email.toLowerCase().includes(msgFilter.toLowerCase()) ||
+    //     m.content.toLowerCase().includes(msgFilter.toLowerCase())
+    // );
+    //OPTIMIZACIÓN DE GRUPOS DE USUARIOS
+    // Usamos useMemo para agrupar usuarios recorriendo el array UNA sola vez (O(n) en vez de O(3n)).
+    const { groupAdmins, groupWorkers, groupTourists } = useMemo(() => {
+        const admins: typeof users = [];
+        const workers: typeof users = [];
+        const tourists: typeof users = [];
+
+        filteredUsers?.forEach(u => {
+            if (u.role === 'admin') admins.push(u);
+            else if (u.role === 'worker') workers.push(u);
+            else if (u.role === 'registered') tourists.push(u);
+        });
+
+        return {
+            groupAdmins: admins,
+            groupWorkers: workers,
+            groupTourists: tourists
+        };
+    }, [filteredUsers]); // Solo se recalcula si cambia la lista filtrada principal
+
+    //OPTIMIZACIÓN DE MENSAJES
+    const filteredMessages = useMemo(() => {
+        if (!messages) return [];
+        // Calculamos el término de búsqueda UNA vez fuera del bucle
+        const search = msgFilter.toLowerCase();
+        if (!search) return messages; // Si no hay búsqueda, devolvemos todo rápido
+
+        return messages.filter(m =>
+            m.name.toLowerCase().includes(search) ||
+            m.email.toLowerCase().includes(search) ||
+            m.content.toLowerCase().includes(search)
+        );
+    }, [messages, msgFilter]);
 
     // --- MUTATIONS (Acciones de escritura) ---
-    
     // 1. Eliminar Usuario
     const deleteUserMut = useMutation({
         mutationFn: MockDB.deleteUser,

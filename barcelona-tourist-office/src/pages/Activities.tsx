@@ -185,8 +185,17 @@ const Activities: React.FC = () => {
             <aside>
                 {/* Componente reutilizable del Clima */}
                 <WeatherAside />
-                <div style={{ background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
-                   {/* ...existing code... */}
+                <div style={{ background: '#c8dcf0', padding: '1rem', borderRadius: '8px' }}>
+                   <p style={{ fontWeight: 'bold', color: '#2563eb', marginBottom: '0.5rem' }}>¿Planeando tu viaje?</p>
+                   <p style={{ color: '#666', fontSize: '0.9rem' }}>
+                       Contrata nuestros guías oficiales o consulta dudas puntuales.
+                   </p>
+                   <button 
+                       onClick={() => navigate('/contact')}
+                       style={{ display: 'block', textAlign: 'center', background: '#2563eb', padding: '0.5rem', borderRadius: '4px', color: '#fff', fontWeight: 'bold', border: 'none', marginTop: '1rem', width: '100%' }}
+                   >
+                       Contactar
+                   </button>
                 </div>
             </aside>
         </div>
