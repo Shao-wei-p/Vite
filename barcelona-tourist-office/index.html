@@ -2,11 +2,17 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- Viewport: Esencial para que la web sea Responsive (se adapte a móviles) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oficina de Turismo de Barcelona</title>
   </head>
   <body>
+    <!-- El contenedor vacío donde React "montará" toda la aplicación -->
     <div id="root"></div>
+    
+    <!-- Script tipo Módulo: 
+         Vite usa ES Modules nativos del navegador durante desarrollo (src="/src/main.tsx").
+         Esto hace que el inicio sea instantáneo porque no tiene que empaquetar todo el JS en un solo archivo antes de servirlo. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

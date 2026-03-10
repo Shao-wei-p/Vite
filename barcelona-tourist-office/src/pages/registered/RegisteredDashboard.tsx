@@ -6,43 +6,52 @@ import { MockDB, BookingDB } from '../../services/mockDatabase'; // Importar DB
 const RegisteredDashboard: React.FC = () => {
     const { user } = useAuthStore();
     const queryClient = useQueryClient();
+    // Estado local para controlar el filtro visual activo
     const [filter, setFilter] = useState<'all' | 'confirmed' | 'cancelled'>('all');
 
+    // Query para obtener MIS reservas
     const { data: bookings, isLoading } = useQuery({
-        queryKey: ['myBookings', user?.id],
+        queryKey: ['myBookings', user?.id], // Key compuesta: esencial para que la caché se separe por usuario.
         queryFn: () => {
+             // Protección extra: Si no hay usuario, retornamos array vacío
              if (!user) return Promise.resolve([]);
-             return MockDB.getUserBookings(user.id); // Usar DB real
+             return MockDB.getUserBookings(user.id);
         },
-        enabled: !!user
+        enabled: !!user // La query NO se ejecuta hasta que 'user' exista.
     });
 
+    // Mutación para cancelar
     const cancelMutation = useMutation({
         mutationFn: async (bookingId: string) => {
-            return MockDB.cancelBooking(bookingId); // Llamada a DB real
+            return MockDB.cancelBooking(bookingId);
         },
         onSuccess: () => {
             alert('Reserva cancelada correctamente');
-            // Recargamos los datos
+            // Invalidación: Fuerza a React Query a refrescar la lista 'myBookings' en segundo plano.
             queryClient.invalidateQueries({ queryKey: ['myBookings'] });
         }
     });
 
-    // Lógica de Filtrado y Ordenamiento
+    // Lógica de Computación Derivada (useMemo)
+    // Esto es muy eficiente: Filtra y ordena los datos crudos del servidor en el cliente.
+    // Solo se recalcula si cambian 'bookings' (nuevos datos del servidor) o 'filter' (interacción del usuario).
     const processedBookings = useMemo(() => {
         if (!bookings) return [];
         
-        // 1. Filtrar
+        // 1. Filtrado
         const filtered = bookings.filter(b => filter === 'all' || b.status === filter);
         
-        // 2. Ordenar: Confirmadas arriba, Canceladas abajo
+        // 2. Ordenamiento (Sort in-place)
+        // Retorna -1 si 'a' debe ir antes, 1 si debe ir después.
         return filtered.sort((a, b) => {
              if (a.status === b.status) return 0;
-             return a.status === 'confirmed' ? -1 : 1;
+             return a.status === 'confirmed' ? -1 : 1; // Pone las confirmadas primero
         });
     }, [bookings, filter]);
 
+    // Función auxiliar para simular un PDF
     const handlePrint = (booking: BookingDB) => {
+        // Template String (backticks) permite saltos de línea y variables integradas.
         const content = `
         ------------------------------------------
              OFICINA DE TURISME DE BARCELONA
@@ -66,22 +75,25 @@ const RegisteredDashboard: React.FC = () => {
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
             <h1 className="text-2xl font-bold mb-6">Mis Reservas</h1>
             
-            {/* Controles de Filtro */}
+            {/* Controles de Filtro Visual */}
             <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
                 <button 
                     onClick={() => setFilter('all')}
                     style={{ 
+                        // Estilos condicionales en línea: background cambia según el estado 'filter'
+                        background: filter === 'all' ? '#333' : 'white',
+                        color: filter === 'all' ? 'white' : '#333',
+                        // ...existing code...
                         padding: '0.5rem 1rem', 
                         borderRadius: '20px', 
                         border: '1px solid #ddd',
-                        background: filter === 'all' ? '#333' : 'white',
-                        color: filter === 'all' ? 'white' : '#333',
                         cursor: 'pointer',
                         fontWeight: 'bold'
                     }}
                 >
                     Todas
                 </button>
+                {/* ...existing code... (Botones Confirmadas y Canceladas similares) */}
                 <button 
                     onClick={() => setFilter('confirmed')}
                     style={{ 
@@ -112,7 +124,9 @@ const RegisteredDashboard: React.FC = () => {
                 </button>
             </div>
             
+            {/* Lista de Resultados */}
             <div className="booking-list">
+                {/* Mensaje si no hay resultados tras el filtrado */}
                 {processedBookings.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '2rem', background: '#f9f9f9', borderRadius: '8px' }}>
                         <p>No hay reservas con este filtro.</p>
@@ -120,13 +134,16 @@ const RegisteredDashboard: React.FC = () => {
                     </div>
                 )}
                 
+                {/* Mapeo de la lista procesada */}
                 {processedBookings.map(booking => (
                     <div key={booking.id} style={{ 
+                        // Estilos dinámicos: opacidad reducida si está cancelada
+                        opacity: booking.status === 'cancelled' ? 0.75 : 1,
+                        background: booking.status === 'cancelled' ? '#f3f4f6' : 'white',
+                        // ...existing code...
                         border: '1px solid #ddd', 
                         padding: '1.5rem', 
                         borderRadius: '8px', 
-                        background: booking.status === 'cancelled' ? '#f3f4f6' : 'white',
-                        opacity: booking.status === 'cancelled' ? 0.75 : 1,
                         marginBottom: '1rem',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -153,6 +170,7 @@ const RegisteredDashboard: React.FC = () => {
                         </div>
                         
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {/* Solo mostramos acciones si la reserva está activa (confirmed) */}
                             {booking.status === 'confirmed' && (
                                 <>
                                     <button 

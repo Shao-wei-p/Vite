@@ -4,35 +4,41 @@ import { Activity, Event } from '../../types';
 import { MockDB } from '../../services/mockDatabase';
 
 const WorkerDashboard: React.FC = () => {
+    // State para Tab: Controla qué sección se ve.
+    // TypeScript restringue los valores posibles con la Union Type ('activities' | 'events'...).
     const [tab, setTab] = useState<'activities' | 'events' | 'attendees'>('activities');
     const queryClient = useQueryClient();
     
-    // States para Formularios
+    // States para Formularios (Edición/Creación)
     const [isEditing, setIsEditing] = useState(false);
+    // Partial<Activity>: Un utilitario de TS que hace que todas las propiedades de Activity sean opcionales.
+    // Útil cuando estamos construyendo un objeto formulario paso a paso.
     const [formAct, setFormAct] = useState<Partial<Activity>>({});
     const [formEvt, setFormEvt] = useState<Partial<Event>>({});
 
-    // States para Filtros
+    // States para Filtros (Barras de búsqueda)
     const [actFilter, setActFilter] = useState('');
     const [evtFilter, setEvtFilter] = useState('');
     const [attFilter, setAttFilter] = useState('');
 
     // --- QUERIES ---
+    // Cargamos TODO de golpe. Como MockDB simula latencia, estos 3 inician en paralelo.
     const { data: activities } = useQuery({ queryKey: ['activities'], queryFn: MockDB.getActivities });
     const { data: events } = useQuery({ queryKey: ['events'], queryFn: MockDB.getEvents });
     const { data: attendees } = useQuery({ queryKey: ['attendees'], queryFn: MockDB.getAllBookings });
 
-    // Lógica de filtrado
+    // Lógica de filtrado en cliente (Client-side filtering)
+    // Es rápido para datasets pequeños (< 1000 items).
     const filteredActivities = activities?.filter(a => a.title.toLowerCase().includes(actFilter.toLowerCase()));
-    
     const filteredEvents = events?.filter(e => e.title.toLowerCase().includes(evtFilter.toLowerCase()));
     
+    // Filtro complejo para reservas: busca por ID user O título actividad
     const filteredAttendees = attendees?.filter(a => 
         a.userId.toLowerCase().includes(attFilter.toLowerCase()) || 
         a.activityTitle.toLowerCase().includes(attFilter.toLowerCase())
     );
 
-    // Separar por estado para visualización
+    // Separar por estado para visualización en tablas distintas
     const confirmedBookings = filteredAttendees?.filter(a => a.status === 'confirmed');
     const cancelledBookings = filteredAttendees?.filter(a => a.status === 'cancelled');
 
@@ -40,7 +46,9 @@ const WorkerDashboard: React.FC = () => {
     const saveActMutation = useMutation({
         mutationFn: MockDB.saveActivity,
         onSuccess: () => {
+             // Invalida querie para refrescar tabla
             queryClient.invalidateQueries({ queryKey: ['activities'] });
+            // Cierra el formulario y lo limpia
             setIsEditing(false);
             setFormAct({});
         }
@@ -67,6 +75,7 @@ const WorkerDashboard: React.FC = () => {
     });
 
     // --- MUTATION RESERVAS ---
+    // Permite al trabajador cancelar reservas de OTROS usuarios.
     const cancelBookingMut = useMutation({
         mutationFn: MockDB.cancelBooking,
         onSuccess: () => {
@@ -75,11 +84,12 @@ const WorkerDashboard: React.FC = () => {
         }
     });
 
-    // Helper Styles
+    // Helper Styles (Estilos en línea para simplicidad en este prototipo)
     const btnStyle = { padding: '0.5rem 1rem', cursor: 'pointer', marginRight: '5px' };
 
     return (
         <div style={{ padding: '1rem' }}>
+            {/* Navegación de Pestañas */}
             <div style={{ marginBottom: '1rem', borderBottom: '1px solid #ccc', paddingBottom: '0.5rem' }}>
                 <button onClick={() => setTab('activities')} style={{...btnStyle, fontWeight: tab==='activities'?'bold':'normal'}}>Actividades</button>
                 <button onClick={() => setTab('events')} style={{...btnStyle, fontWeight: tab==='events'?'bold':'normal'}}>Eventos</button>
@@ -90,6 +100,7 @@ const WorkerDashboard: React.FC = () => {
             {tab === 'activities' && (
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                         {/* Botón Nuevo: Abre form y resetea estado */}
                         <button onClick={() => { setIsEditing(true); setFormAct({}); }} style={{...btnStyle, background: 'green', color: 'white'}}>+ Nueva Actividad</button>
                         <input 
                             placeholder="Buscar actividad..." 
@@ -99,17 +110,22 @@ const WorkerDashboard: React.FC = () => {
                         />
                     </div>
                     
+                    {/* Render Formulario Condicional */}
                     {isEditing && (
                         <div style={{background: '#f9f9f9', padding: '1rem', marginBottom: '1rem', border: '1px solid #ddd'}}>
+                            {/* Título dinámico: Si tiene ID es editar, si no, nueva */}
                             <h4>{formAct.id ? 'Editar' : 'Nueva'} Actividad</h4>
+                            {/* Controlled Inputs: vinculados state formAct */}
                             <input placeholder="Título" value={formAct.title || ''} onChange={e=>setFormAct({...formAct, title: e.target.value})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
                             <input placeholder="Precio" type="number" value={formAct.price || ''} onChange={e=>setFormAct({...formAct, price: Number(e.target.value)})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
                             <input placeholder="Imagen (Emoji)" value={formAct.image || ''} onChange={e=>setFormAct({...formAct, image: e.target.value})} style={{display:'block', width:'100%', marginBottom:'0.5rem', padding:'5px'}} />
+                            {/* Cast 'as Activity': aseguramos a TS que al guardar el objeto está completo */}
                             <button onClick={() => saveActMutation.mutate(formAct as Activity)} style={{...btnStyle, background: 'blue', color:'white'}}>Guardar</button>
                             <button onClick={() => setIsEditing(false)} style={btnStyle}>Cancelar</button>
                         </div>
                     )}
 
+                    {/* Tabla de Datos */}
                     <table style={{width: '100%', borderCollapse: 'collapse'}}>
                         <thead><tr style={{background:'#eee'}}><th style={{textAlign:'left', padding:'8px'}}>Img</th><th style={{textAlign:'left', padding:'8px'}}>Nombre</th><th style={{textAlign:'left'}}>Precio</th><th>Accion</th></tr></thead>
                         <tbody>
@@ -119,6 +135,7 @@ const WorkerDashboard: React.FC = () => {
                                     <td>{a.title}</td>
                                     <td>{a.price}€</td>
                                     <td>
+                                        {/* Carga el item en el form para editar */}
                                         <button onClick={() => {setFormAct(a); setIsEditing(true);}} style={{marginRight: '5px'}}>✏️</button>
                                         <button onClick={() => {if(confirm('Borrar?')) delActMutation.mutate(a.id);}}>🗑️</button>
                                     </td>
@@ -130,7 +147,7 @@ const WorkerDashboard: React.FC = () => {
                 </div>
             )}
 
-            {/* --- TAB EVENTOS --- */}
+            {/* --- TAB EVENTOS (Lógica idéntica a Actividades) --- */}
              {tab === 'events' && (
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>

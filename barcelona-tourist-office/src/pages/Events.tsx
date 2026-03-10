@@ -4,12 +4,14 @@ import WeatherAside from '../components/WeatherAside';
 import { MockDB } from '../services/mockDatabase';
 import { Event } from '../types';
 
+// Fetcher local specific para esta página.
 const fetchEvents = async (): Promise<Event[]> => {
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 600)); // Latencia visual
     return MockDB.getEvents();
 };
 
 const Events: React.FC = () => {
+    // useQuery básico. La caché se gestiona bajo la key ['events'].
     const { data: events, isLoading } = useQuery({
         queryKey: ['events'],
         queryFn: fetchEvents,
@@ -19,8 +21,10 @@ const Events: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', padding: '2rem' }}>
             <main>
                 <h1 className="text-2xl font-bold mb-6">Próximos Eventos</h1>
+                {/* Renderizado condicional simple con && (AND lógico) */}
                 {isLoading && <p>Cargando agenda cultural...</p>}
                 
+                {/* Si cargó pero el array está vacío */}
                 {events?.length === 0 && <p>No hay eventos programados.</p>}
 
                 <div style={{ display: 'grid', gap: '1rem' }}>
@@ -29,6 +33,7 @@ const Events: React.FC = () => {
                             <div style={{ color: '#666', fontSize: '0.9rem' }}>{evt.date}</div>
                             <h3 style={{ margin: '0.5rem 0', fontSize: '1.25rem' }}>{evt.title}</h3>
                             <p>📍 {evt.location}</p>
+                            {/* Renderizado condicional: Solo mostramos descripción si existe */}
                             {evt.description && <p style={{marginTop: '0.5rem', color: '#555'}}>{evt.description}</p>}
                         </div>
                     ))}
