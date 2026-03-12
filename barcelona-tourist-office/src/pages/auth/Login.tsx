@@ -57,6 +57,6 @@ const Login: React.FC = () => {
             </form>
         </div>
     );
-};
+}; 
 
 export default Login;
