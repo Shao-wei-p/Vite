@@ -1,72 +1,75 @@
-import React, { useState } from 'react';
-import './Navbar.css';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
-  appName?: string;
+  userRole: string;
   onLogout: () => void;
-  onSettings: () => void;
-  userRole: string; // 'superAdmin' | 'admin' | ...
 }
 
-const Navbar: React.FC<NavbarProps> = ({ 
-  appName = "Demo Proyecto", 
-  onLogout, 
-  onSettings, 
-  userRole 
-}) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const canManageUsers = ['superAdmin', 'admin'].includes(userRole);
+const Navbar: React.FC<NavbarProps> = ({ userRole, onLogout }) => {
+  const navigate = useNavigate();
 
-  const navItems = [
-    { label: 'Inicio',    icon: '🏠', href: '/dashboard' },
-    { label: 'Proyectos', icon: '📁', href: '/projects' },
-    { label: 'Informes',  icon: '📊', href: '/reports' },
-    ...(canManageUsers ? [{ label: 'Usuarios', icon: '👥', href: '/users' }] : []),
-  ];
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
+  };
 
   return (
-    <aside className={`navbar ${collapsed ? 'navbar--collapsed' : ''}`} aria-label="Menú principal">
-      {/* ── Parte Superior: Logo ── */}
-      <div className="navbar__header">
-        <div className="navbar__logo" aria-label={appName}>
-          <span className="navbar__logo-icon" aria-hidden="true">⬡</span>
-          {!collapsed && <span className="navbar__logo-text">{appName}</span>}
+    // CAMBIO IMPORTANTE: Estilos para barra lateral vertical
+    <nav style={{ 
+      width: '250px', 
+      height: '100vh', 
+      backgroundColor: '#1f2937', 
+      color: 'white',
+      display: 'flex', 
+      flexDirection: 'column', 
+      padding: '1.5rem',
+      flexShrink: 0
+    }}>
+      <div className="brand" style={{ marginBottom: '2rem', fontSize: '1.5rem', fontWeight: 'bold' }}>
+        Demo App
+      </div>
+      
+      <div className="menu" style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+        {/* Estilos comunes para links */}
+        <style>{`
+          .nav-link { color: #d1d5db; text-decoration: none; padding: 10px; border-radius: 6px; display: block; }
+          .nav-link:hover { background-color: #374151; color: white; }
+        `}</style>
+
+        {userRole !== 'viewer' && <Link className="nav-link" to="/app">Inicio</Link>}
+        
+        {['superAdmin', 'admin', 'editor'].includes(userRole) && (
+          <Link className="nav-link" to="/proyectos">Proyectos</Link>
+        )}
+
+        <Link className="nav-link" to="/informes">Informes</Link>
+
+        {['superAdmin', 'admin'].includes(userRole) && (
+          <Link className="nav-link" to="/usuarios">Usuarios</Link>
+        )}
+      </div>
+
+      <div className="user-actions" style={{ borderTop: '1px solid #374151', paddingTop: '1rem' }}>
+        <div style={{ marginBottom: '10px', fontSize: '0.9em', color: '#9ca3af' }}>
+          Rol: <span style={{ color: 'white', textTransform: 'capitalize' }}>{userRole}</span>
         </div>
         <button 
-          className="navbar__toggle"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
+          onClick={handleLogout}
+          style={{ 
+            width: '100%', 
+            padding: '8px', 
+            backgroundColor: '#dc2626', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px', 
+            cursor: 'pointer' 
+          }}
         >
-          {collapsed ? '»' : '«'}
+          Cerrar Sesión
         </button>
       </div>
-
-      {/* ── Parte Central: Navegación ── */}
-      <nav className="navbar__nav">
-        <ul className="navbar__list">
-          {navItems.map((item) => (
-            <li key={item.label} className="navbar__item">
-              <a href={item.href} className="navbar__link">
-                <span className="navbar__icon" aria-hidden="true">{item.icon}</span>
-                {!collapsed && <span className="navbar__label">{item.label}</span>}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* ── Parte Inferior: Acciones ── */}
-      <div className="navbar__footer">
-        <button onClick={onSettings} className="navbar__btn" title="Configuración">
-          <span aria-hidden="true">⚙️</span>
-          {!collapsed && <span>Configuración</span>}
-        </button>
-        <button onClick={onLogout} className="navbar__btn navbar__btn--logout" title="Cerrar Sesión">
-          <span aria-hidden="true">🚪</span>
-          {!collapsed && <span>Cerrar Sesión</span>}
-        </button>
-      </div>
-    </aside>
+    </nav>
   );
 };
 

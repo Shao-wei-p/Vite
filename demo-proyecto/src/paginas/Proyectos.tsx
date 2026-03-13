@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import ListaProyecto from '../components/ListaProyecto';
+import { Link } from 'react-router-dom';
 import { dbService } from '../servicios/dbService';
 import type { Project } from '../types/tiposDatos';
 
 interface ProyectosPageProps {
-  onLogout: () => void;
   userRole: string;
 }
 
-const Proyectos: React.FC<ProyectosPageProps> = ({ onLogout, userRole }) => {
+const Proyectos: React.FC<ProyectosPageProps> = ({ userRole }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filter, setFilter] = useState('');
 
@@ -20,51 +18,69 @@ const Proyectos: React.FC<ProyectosPageProps> = ({ onLogout, userRole }) => {
   const handleCreate = async () => {
     const name = prompt("Nombre del nuevo proyecto:");
     if (!name) return;
-    await dbService.createProject({
-        name,
-        url: `https://${name.toLowerCase().replace(/\s/g, '-')}.com`,
-        tenantId: 'demo',
-        userId: 'current'
-    });
-    const freshData = await dbService.getProjects();
-    setProjects(freshData);
+    try {
+      await dbService.createProject({
+          name,
+          url: `https://${name.toLowerCase().replace(/\s/g, '-')}.com`,
+          tenantId: 'demo',
+          userId: 'current'
+      });
+      const freshData = await dbService.getProjects();
+      setProjects(freshData);
+    } catch (error) {
+      alert("Error creando proyecto");
+    }
   };
 
   const filteredProjects = projects.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', position: 'fixed', top: 0, left: 0 }}>
-      <Navbar onLogout={onLogout} onSettings={() => {}} userRole={userRole} />
-      
-      <main style={{ flex: 1, padding: '2rem', backgroundColor: '#f3f4f6', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1 style={{ margin: 0 }}>Proyectos</h1>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-                <input 
-                    type="text" 
-                    placeholder="Buscar proyecto..." 
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #d1d5db' }}
-                />
-                <button onClick={handleCreate} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>
-                    + Nuevo Proyecto
-                </button>
-            </div>
-        </div>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ margin: 0 }}>Proyectos</h1>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+              <input 
+                  type="text" 
+                  placeholder="Buscar proyecto..." 
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #d1d5db', width: '250px' }}
+              />
+              <button 
+                onClick={handleCreate} 
+                style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                  + Nuevo Proyecto
+              </button>
+          </div>
+      </div>
 
-        <ListaProyecto 
-            projects={filteredProjects}
-            onNewProject={handleCreate} // Redundante si usamos el botón de arriba, pero requerido por props
-            onEdit={(id) => alert(`Editar ${id}`)}
-            onDelete={async (id) => {
-                if(confirm('Borrar?')) {
-                    await dbService.deleteProject(id);
-                    setProjects(prev => prev.filter(p => p.id !== id));
-                }
-            }}
-        />
-      </main>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+        {filteredProjects.map((project) => (
+          <div key={project.id} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '20px', background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <h3 style={{ margin: '0 0 10px 0' }}>{project.name}</h3>
+            <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '15px' }}>
+              {project.description || 'Sin descripción disponible'}
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', background: '#f3f4f6', padding: '4px 8px', borderRadius: '999px', color: '#374151', textTransform: 'capitalize' }}>
+                {project.status || 'Activo'}
+              </span>
+              <Link 
+                to={`/proyectos/${project.id}`} 
+                style={{ color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}
+              >
+                Ver Detalles →
+              </Link>
+            </div>
+          </div>
+        ))}
+        {filteredProjects.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#666' }}>
+            No se encontraron proyectos.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

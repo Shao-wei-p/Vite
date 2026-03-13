@@ -1,104 +1,101 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import ListaProyecto from '../components/ListaProyecto';
-import Footer from '../components/Footer';
-// CORRECCIÓN: Usar 'import type'
+import { Link } from 'react-router-dom';
 import type { Project } from '../types/tiposDatos';
 import { dbService } from '../servicios/dbService';
 
 interface HomeProps {
-  onLogout: () => void;
   userRole: string;
 }
 
-const Home: React.FC<HomeProps> = ({ onLogout, userRole }) => {
-  const [projects, setProjects] = useState<Project[]>([]);
+const StatCard = ({ title, count }: { title: string; count: number }) => (
+  <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', textAlign: 'center', backgroundColor: '#f9f9f9', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+    <h3 style={{ margin: '0 0 10px 0', fontSize: '2rem', color: '#007bff' }}>{count}</h3>
+    <p style={{ margin: 0, color: '#666' }}>{title}</p>
+  </div>
+);
+
+const SectionCard = ({ title, link, desc }: { title: string; link: string; desc: string }) => (
+  <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', marginBottom: '15px', backgroundColor: 'white' }}>
+    <h4 style={{ marginTop: 0 }}>{title}</h4>
+    <p style={{ fontSize: '0.9rem', color: '#666' }}>{desc}</p>
+    <Link to={link} style={{ color: '#007bff', textDecoration: 'none', fontWeight: 'bold' }}>Ver detalle →</Link>
+  </div>
+);
+
+const Home: React.FC<HomeProps> = ({ userRole }) => {
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar proyectos al montar el componente
+  // Cargar proyectos recientes
   useEffect(() => {
-    loadProjects();
+    const loadStats = async () => {
+      setLoading(true);
+      try {
+        const data = await dbService.getProjects();
+        // Tomamos los últimos 3 para "Recientes"
+        setRecentProjects(data.slice(0, 3));
+      } catch (error) {
+        console.error("Error cargando dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
   }, []);
 
-  const loadProjects = async () => {
-    setLoading(true);
-    try {
-      const data = await dbService.getProjects();
-      setProjects(data);
-    } catch (error) {
-      console.error("Error cargando proyectos:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateProject = async () => {
-    const name = prompt("Nombre del proyecto:");
-    if (!name) return;
-    
-    // Datos dummy para la creación rápida
-    try {
-        await dbService.createProject({
-            name,
-            url: `https://${name.toLowerCase().replace(/\s/g, '-')}.com`,
-            tenantId: '11111111-1111-1111-1111-111111111111', // Tenant Demo por defecto
-            userId: '0000' // ID genérico
-        });
-        await loadProjects(); // Recargar lista
-    } catch (e) {
-        alert("Error al crear proyecto");
-        console.error(e);
-    }
-  };
-
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este proyecto?")) return;
-    try {
-        await dbService.deleteProject(id);
-        setProjects(prev => prev.filter(p => p.id !== id));
-    } catch (e) {
-        console.error(e);
-    }
-  };
-
   return (
-    // CAMBIO: height: 100vh y overflow: hidden fijan el contenedor al tamaño de la ventana
-    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden' }}>
-      {/* Navbar lateral */}
-      <Navbar 
-        onLogout={onLogout} 
-        onSettings={() => console.log('Configuración')} 
-        userRole={userRole} 
-      />
+    <div>
+      <h1 style={{ marginBottom: '2rem', color: '#111827' }}>Panel de Control</h1>
       
-      {/* Contenido principal */}
-      {/* CAMBIO: overflowY: auto permite scroll interno independiente del Navbar */}
-      <main style={{ 
-        flex: 1, 
-        padding: '2rem', 
-        backgroundColor: '#f3f4f6', 
-        display: 'flex', 
-        flexDirection: 'column',
-        overflowY: 'auto', 
-        minWidth: 0 // Crucial para responsive en flexbox (evita overflow horizontal forzado)
-      }}>
-        <h1 style={{ marginBottom: '2rem', color: '#111827' }}>Panel de Control</h1>
-        
-        {loading ? (
-            <p>Cargando datos...</p>
-        ) : (
-            <ListaProyecto 
-              projects={projects}
-              onNewProject={handleCreateProject}
-              onEdit={(id) => console.log('Editar', id)}
-              onDelete={handleDeleteProject}
-            />
-        )}
+      {loading ? (
+          <p>Cargando información del panel...</p>
+      ) : (
+        <div>
+          <p style={{ marginBottom: '30px' }}>Bienvenido de nuevo, <strong style={{ textTransform: 'capitalize' }}>{userRole}</strong></p>
+          
+          {/* SECCIÓN 1: Resumen (Solo SuperAdmin) */}
+          {userRole === 'superAdmin' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              <StatCard title="Proyectos Activos" count={12} />
+              <StatCard title="Informes Generados" count={45} />
+              <StatCard title="Usuarios Registrados" count={8} />
+            </div>
+          )}
 
-        <footer style={{ marginTop: 'auto', paddingTop: '3rem', textAlign: 'center', color: '#6b7280', fontSize: '0.9rem' }}>
-           <Footer />
-        </footer>
-      </main>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+            {/* SECCIÓN 2: Proyectos Recientes */}
+            {['superAdmin', 'admin', 'editor'].includes(userRole) && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Proyectos Recientes</h2>
+                  <Link to="/proyectos" style={{ fontSize: '0.9rem', color: '#007bff' }}>Ver todos</Link>
+                </div>
+                
+                {recentProjects.length > 0 ? (
+                  recentProjects.map(p => (
+                    <SectionCard key={p.id} title={p.name} link={`/proyectos/${p.id}`} desc={`Estado: ${p.status}`} />
+                  ))
+                ) : (
+                  <p>No hay proyectos recientes.</p>
+                )}
+              </div>
+            )}
+
+            {/* SECCIÓN 3: Informes Recientes */}
+            {['superAdmin', 'admin', 'editor', 'viewer'].includes(userRole) && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Informes Recientes</h2>
+                  <Link to="/informes" style={{ fontSize: '0.9rem', color: '#007bff' }}>Ver todos</Link>
+                </div>
+                <SectionCard title="Informe SEO - Alpha" link="/informes" desc="Generado el 20/10/2023" />
+                <SectionCard title="Performance Q3" link="/informes" desc="Generado el 18/10/2023" />
+                <SectionCard title="Accesibilidad Web" link="/informes" desc="Generado el 15/10/2023" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
