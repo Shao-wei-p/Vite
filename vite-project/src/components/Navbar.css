@@ -1,0 +1,369 @@
+/* ── Variables ──────────────────────────────────────────────────────────── */
+:root {
+  --sidebar-width:          240px;
+  --sidebar-width-collapsed: 64px;
+}
+
+/* ── Sidebar base ───────────────────────────────────────────────────────── */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 200;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+.navbar--collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+/* ── Brand / Logo ───────────────────────────────────────────────────────── */
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1rem 1rem;
+  min-height: 64px;
+  flex-shrink: 0;
+}
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: #111827;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.navbar__logo:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.navbar__logo-icon {
+  font-size: 1.5rem;
+  color: #4f46e5;
+  flex-shrink: 0;
+}
+
+.navbar__logo-text strong {
+  color: #4f46e5;
+}
+
+.navbar__collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: transparent;
+  cursor: pointer;
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar__collapse-btn:hover {
+  background: #f3f4f6;
+  color: #4f46e5;
+}
+
+.navbar__collapse-btn:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Ocultar botón de colapso cuando está colapsado para centrarlo */
+.navbar--collapsed .navbar__brand {
+  justify-content: center;
+  padding: 1.25rem 0 1rem;
+}
+
+.navbar--collapsed .navbar__collapse-btn {
+  /* Siempre visible en modo colapsado */
+}
+
+/* ── Usuario ────────────────────────────────────────────────────────────── */
+.navbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0 0.75rem;
+  border-radius: 8px;
+  background: #f9fafb;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.navbar--collapsed .navbar__user {
+  justify-content: center;
+  margin: 0 0.5rem;
+  padding: 0.75rem 0.5rem;
+}
+
+.navbar__user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.navbar__user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.navbar__user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__user-role {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* ── Divider ────────────────────────────────────────────────────────────── */
+.navbar__divider {
+  border: none;
+  border-top: 1px solid #f3f4f6;
+  margin: 0.75rem 0;
+  flex-shrink: 0;
+}
+
+/* ── Nav list ───────────────────────────────────────────────────────────── */
+.navbar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.navbar--collapsed .navbar__list {
+  padding: 0 0.5rem;
+  align-items: center;
+}
+
+.navbar__item {
+  width: 100%;
+}
+
+.navbar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 7px;
+  text-decoration: none;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+}
+
+.navbar__link:hover {
+  background: #f3f4f6;
+  color: #4f46e5;
+}
+
+.navbar__link:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.navbar__link--active {
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.navbar__link-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.navbar__link-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Modo colapsado: centrar enlace */
+.navbar--collapsed .navbar__link {
+  justify-content: center;
+  padding: 0.6rem;
+  width: 40px;
+}
+
+/* ── Acciones inferiores ────────────────────────────────────────────────── */
+.navbar__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.navbar--collapsed .navbar__actions {
+  padding: 0.75rem 0.5rem;
+  align-items: center;
+}
+
+.navbar__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  background: transparent;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+}
+
+.navbar__btn--icon {
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.navbar__btn--icon:hover,
+.navbar__btn--icon:focus-visible {
+  background: #f3f4f6;
+  color: #4f46e5;
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.navbar__btn--logout {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.navbar__btn--logout:hover,
+.navbar__btn--logout:focus-visible {
+  background: #dc2626;
+  color: #ffffff;
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Modo colapsado: solo icono */
+.navbar--collapsed .navbar__btn {
+  width: 40px;
+  padding: 0.55rem;
+  justify-content: center;
+}
+
+/* ── Botón hamburguesa móvil ────────────────────────────────────────────── */
+.navbar__mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 300;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.navbar__mobile-toggle:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.navbar__toggle-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #374151;
+  border-radius: 2px;
+}
+
+/* ── Overlay móvil ──────────────────────────────────────────────────────── */
+.navbar__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 199;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar__mobile-toggle {
+    display: flex;
+  }
+
+  .navbar__overlay {
+    display: block;
+  }
+
+  .navbar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, width 0.25s ease;
+    width: var(--sidebar-width) !important; /* Siempre expandido en móvil */
+  }
+
+  .navbar--mobile-open {
+    transform: translateX(0);
+  }
+
+  .navbar--collapsed {
+    width: var(--sidebar-width) !important;
+  }
+}

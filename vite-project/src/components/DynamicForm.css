@@ -1,0 +1,251 @@
+.dynamic-form {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.dynamic-form__header {
+  padding: 1.5rem 2rem 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dynamic-form__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.dynamic-form__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dynamic-form__fields {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dynamic-form__footer {
+  padding: 1rem 2rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Form Field ─────────────────────────────────────────────────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  position: relative;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-label--inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.form-required {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.form-input--error {
+  border-color: #dc2626;
+  background: #fff5f5;
+}
+
+.form-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-input--success {
+  border-color: #16a34a;
+}
+
+.form-input--success:focus {
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+/* ── Textarea ───────────────────────────────────────────────────────────── */
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* ── Select ─────────────────────────────────────────────────────────────── */
+.form-select-wrapper {
+  position: relative;
+}
+
+.form-select-wrapper select.form-input {
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.form-select-arrow {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+/* ── Checkbox ───────────────────────────────────────────────────────────── */
+.form-field--checkbox {
+  gap: 0.25rem;
+}
+
+.form-field__checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: #4f46e5;
+  flex-shrink: 0;
+}
+
+.form-checkbox:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* ── Validation Icon ────────────────────────────────────────────────────── */
+.form-validation-icon {
+  position: absolute;
+  right: 0.875rem;
+  bottom: calc(0.6rem + 1px);
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.form-validation-icon--success { color: #16a34a; }
+.form-validation-icon--error   { color: #dc2626; }
+
+/* ── Messages ───────────────────────────────────────────────────────────── */
+.form-help {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.form-error {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.form-error::before {
+  content: '⚠';
+  font-size: 0.7rem;
+}
+
+.form-field--error .form-label {
+  color: #dc2626;
+}
+
+.form-success-banner {
+  margin: 0 2rem 1rem;
+  padding: 0.75rem 1rem;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #bbf7d0;
+}
+
+/* ── Submit Button ──────────────────────────────────────────────────────── */
+.form-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.75rem;
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.form-submit-btn:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.form-submit-btn:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 3px;
+}
+
+.form-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+.form-spinner {
+  width: 18px;
+  height: 18px;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.form-spinner__track {
+  opacity: 0.3;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
